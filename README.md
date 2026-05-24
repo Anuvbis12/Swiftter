@@ -29,13 +29,28 @@ The entire backend logic is centralized in a monolithic `main.swift` file.
 <br>
 
 ## ⚙️ Architecture Workflow
+
+The application follows a sophisticated cross-platform pipeline entirely orchestrated by a single Swift file:
+
+1. **🚀 Initialization (`main.swift`)**: The core Swift engine launches. It parses the custom `F1Driver` structs and builds complex arrays containing driver stats, team colors, and local asset paths.
+2. **🔄 JSON Serialization**: The engine automatically converts the raw Swift data models into a secure JSON string using `JSONEncoder` and exports it directly as a JavaScript variable into `f1-website/data.js`.
+3. **🖥️ GUI Spawning (`Foundation.Process`)**: Swift leverages the Windows command shell to forcefully spawn an isolated instance of Microsoft Edge in `--app` mode, stripping away typical browser UI to create a native desktop window.
+4. **🎨 Frontend Injection**: The spawned window executes `index.html`. The frontend immediately reads the `data.js` database injected by Swift, reacting to the state to render the animations, sidebar buttons, and interactive `Chart.js` graphs.
+
+### Visual Representation:
 ```mermaid
 graph TD;
-    A[main.swift] -->|Compiles Array Data| B(JSON Serialization);
-    B -->|Writes| C[f1-website/data.js];
-    A -->|Spawns Foundation.Process| D{Edge App Wrapper};
-    D -->|Reads| E[f1-website/index.html];
-    C -->|Injects Data| E;
+    subgraph Backend [Swift Engine]
+        A[main.swift] -->|Compiles Data Models| B(JSON Encoder);
+    end
+    
+    subgraph Frontend [Hybrid GUI Wrapper]
+        B -->|Writes Output To| C[f1-website/data.js];
+        A -->|Spawns Process| D{Edge App Mode};
+        D -->|Loads Layout| E[index.html];
+        C -->|Injects Database| E;
+        E -->|Renders| F((Interactive Dashboard));
+    end
 ```
 
 <br>
